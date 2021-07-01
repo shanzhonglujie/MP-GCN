@@ -4,13 +4,12 @@ H. Zhao, J. Xie, H. Wang, "Graph Convolution Network based on Multi-head Pooling
 ## Overview
 Here we provide the implementation of a MP-GCN in TensorFlow, along with a minimal execution example (on the MR dataset). The repository is organised as follows:
 
-data/ contains the necessary dataset files for Cora;
-models/ contains the implementation of the GAT network (gat.py);
-pre_trained/ contains a pre-trained Cora model (achieving 84.4% accuracy on the test set);
-utils/ contains:
-an implementation of an attention head, along with an experimental sparse version (layers.py);
-preprocessing subroutines (process.py);
-preprocessing utilities for the PPI benchmark (process_ppi.py).
+* data/ contains the necessary dataset files for Cora;
+* models/ contains the implementation of the GAT network (gat.py);
+* pre_trained/ contains a pre-trained Cora model (achieving 84.4% accuracy on the test set);
+* utils/ contains: an implementation of an attention head, along with an experimental sparse version (layers.py);
+* preprocessing subroutines (process.py);
+* preprocessing utilities for the PPI benchmark (process_ppi.py).
 
 Finally, execute_cora.py puts all of the above together and may be used to execute a full training run on Cora.
 
