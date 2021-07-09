@@ -6,7 +6,7 @@ Here we provide the implementation of a MP-GCN in TensorFlow, along with a minim
 
 * data/  # contains the necessary dataset files for MR (single-graph data)
 * data_m/  # contains multi-graph data files for MR
-* vector/  # is used to store graph embedding
+* vector/  # is used to store graph embeddings
 * build_multi_graph.py  # is used to create single graph
 * build_single_graph.py  # is used to create multiple graphs
 * inits.py  # contains parameter initialization functions
