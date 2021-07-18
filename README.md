@@ -23,9 +23,9 @@ Here we provide the implementation of a MP-GCN in TensorFlow, along with a minim
 We ran our experiments on five widely used benchmark corpora including 20-Newsgroups (20NG), Ohsumed, R52 and R8 of Reuters dataset, and Movie Review (MR). The original data can be found in https://github.com/yao8839836/text_gcn
 
 ## How to run
-Create empty folders 'data_m' and 'vector'
-* python build_single_graph.py  # Create graph
-* python train.py  # Training and testing
+* Create empty folders 'data_m' and 'vector'
+* python build_single_graph.py  # create graph
+* python train.py  # training and testing
 
 ## Dependencies
 The script has been tested running under Python 3.6.5 and tensorflow 1.8.0
