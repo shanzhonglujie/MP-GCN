@@ -24,11 +24,8 @@ We ran our experiments on five widely used benchmark corpora including 20-Newsgr
 
 ## How to run
 Create empty folders 'data_m' and 'vector'
-
-1# Create graph
-* python build_single_graph.py
-2# Training and testing
-* python train.py
+* python build_single_graph.py  # Create graph
+* python train.py  # Training and testing
 
 ## Dependencies
 The script has been tested running under Python 3.6.5 and tensorflow 1.8.0
