@@ -2,6 +2,7 @@ import numpy as np
 import pickle as pkl
 import scipy.sparse as sp
 import sys
+import random
 
 def parse_index_file(filename):
     """Parse index file."""
@@ -57,12 +58,8 @@ def load_corpus(dataset_str,file_name='data'):
     y_val[val_mask, :] = labels[val_mask, :]
     y_test[test_mask, :] = labels[test_mask, :]
     # Return different adjacency matrix according to different data
-    if file_name=='data':
-        adj = adj + adj.T.multiply(adj.T > adj) - adj.multiply(adj.T > adj)
-    if file_name=='data_m':
-        for i in range(len(adj)):
-            adj[i] = adj[i] + adj[i].T.multiply(adj[i].T > adj[i]) - adj[i].multiply(adj[i].T > adj[i])
-
+    for i in range(len(adj)):
+        adj[i] = adj[i] + adj[i].T.multiply(adj[i].T > adj[i]) - adj[i].multiply(adj[i].T > adj[i])
     return adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask, train_size, test_size,vocab_size
 
 def sparse_to_tuple(sparse_mx):
