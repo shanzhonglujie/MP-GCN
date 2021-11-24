@@ -136,10 +136,8 @@ class MP_GCN(Model):
         self.input_dim = input_dim['input_dim']
         self.vocab_size = input_dim['vocab_size']
         # -------------------------
-        self.type = input_dim['type']
         self.p=input_dim['p']
         self.head_num=input_dim['head_num']
-        self.is_cat = input_dim['is_cat']
         # -------------------------
         self.output_dim = placeholders['labels'].get_shape().as_list()[1]
         self.placeholders = placeholders
@@ -161,38 +159,18 @@ class MP_GCN(Model):
         self.labels = tf.argmax(self.placeholders['labels'], 1)
 
     def _build(self):
-
-        if self.type==1:
-            T_MP_GCN = GraphConvolution_MP_Star
-            act=lambda x: x
-        elif self.type==2:
-            T_MP_GCN = GraphConvolution_MP_2
-            act = tf.nn.relu
-        else:
-            T_MP_GCN = GraphConvolution_MP_1
-            act = tf.nn.relu
-
-        #-------------------first layer----------------------
-        self.layers.append(T_MP_GCN(input_dim=self.input_dim,
+        self.layers.append(GraphConvolution_MP(input_dim=self.input_dim,
                                             output_dim=FLAGS.hidden1,
                                             placeholders=self.placeholders,
-                                            act=act,
                                             dropout=True,
                                             head_num=self.head_num,
                                             p=self.p,
-                                            is_cat=self.is_cat,
                                             featureless=True,
                                             sparse_inputs=True,
                                             vocab_size=self.vocab_size,
                                             logging=self.logging))
 
-        if self.is_cat==1:
-            h1=FLAGS.hidden1 * 2
-        else:
-            h1=FLAGS.hidden1
-
-        # --------------------second layer---------------------
-        self.layers.append(GraphConvolution(input_dim=h1,
+        self.layers.append(GraphConvolution(input_dim=FLAGS.hidden1,
                                             output_dim=self.output_dim,
                                             placeholders=self.placeholders,
                                             act=lambda x: x,

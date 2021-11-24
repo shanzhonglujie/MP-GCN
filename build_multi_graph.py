@@ -2,55 +2,30 @@ import os
 import random
 import numpy as np
 import pickle as pkl
+# import networkx as nx
 import scipy.sparse as sp
 from utils import loadWord2Vec
 from math import log
 import sys
-# import networkx as nx
 # from sklearn import svm
 # from nltk.corpus import wordnet as wn
 # from sklearn.feature_extraction.text import TfidfVectorizer
 # from scipy.spatial.distance import cosine
-
-def cos_sim(vector_a, vector_b):
-    vector_a = np.mat(vector_a)
-    vector_b = np.mat(vector_b)
-    num = float(vector_a * vector_b.T)
-    denom = np.linalg.norm(vector_a) * np.linalg.norm(vector_b)
-    cos = num / denom
-    sim = 0.5 + 0.5 * cos
-    return sim
-
-# Semantic distance
-def get_similiar(word_pair_count):
-    word_vector_file = path_name+'/glove.6B/glove.6B.300d.txt'
-    vocab, data, word_vector_map = loadWord2Vec(word_vector_file)
-    word_similiar={}
-    for word_pair_str in word_pair_count:
-        pair=word_pair_str.split(',')
-        vector_i = np.array(word_vector_map[vocab[int(pair[0])]])
-        vector_j = np.array(word_vector_map[vocab[int(pair[1])]])
-        similarity =cos_sim(vector_i,vector_j)
-        word_similiar[word_pair_str]=similarity
-    return word_similiar
 
 # if len(sys.argv) != 2:
 # 	sys.exit("Use: python build_graph.py <dataset>")
 
 datasets = ['20ng', 'R8', 'R52', 'ohsumed', 'mr']
 # build corpus
-dataset = 'mr'
-path_name = 'data_m'
+dataset = '20ng'
 
 if dataset not in datasets:
 	sys.exit("wrong dataset name")
 
 # Read Word Vectors
-#word_vector_file = path_name+'/glove.6B/glove.42B.300d.txt'
-#word_vector_file = path_name+'/corpus/' + dataset + '_word_vectors.txt'
-#word_vector_file = path_name+'/' + dataset + '_word_vectors.txt'
-#_, embd, word_vector_map = loadWord2Vec(word_vector_file)
-#word_embeddings_dim = len(embd[0])
+# word_vector_file = 'vector/mr_vector.txt'
+# _, embd, word_vector_map = loadWord2Vec(word_vector_file)
+# word_embeddings_dim = len(embd[0])
 
 word_embeddings_dim = 300
 word_vector_map = {}
@@ -60,7 +35,7 @@ doc_name_list = []
 doc_train_list = []
 doc_test_list = []
 
-f = open(path_name+'/' + dataset + '.txt', 'r')
+f = open('data/' + dataset + '.txt', 'r')
 lines = f.readlines()
 for line in lines:
     doc_name_list.append(line.strip())
@@ -70,9 +45,11 @@ for line in lines:
     elif temp[1].find('train') != -1:
         doc_train_list.append(line.strip())
 f.close()
+# print(doc_train_list)
+# print(doc_test_list)
 
 doc_content_list = []
-f = open(path_name+'/corpus/' + dataset + '.clean.txt', 'r')
+f = open('data/corpus/' + dataset + '.clean.txt', 'r')
 lines = f.readlines()
 for line in lines:
     doc_content_list.append(line.strip())
@@ -83,12 +60,14 @@ train_ids = []
 for train_name in doc_train_list:
     train_id = doc_name_list.index(train_name)
     train_ids.append(train_id)
-# print(train_ids)
+#print(train_ids)
 random.shuffle(train_ids)
 
 # partial labeled data
+#train_ids = train_ids[:int(0.2 * len(train_ids))]
+
 train_ids_str = '\n'.join(str(index) for index in train_ids)
-f = open(path_name+'/' + dataset + '.train.index', 'w')
+f = open('data/' + dataset + '.train.index', 'w')
 f.write(train_ids_str)
 f.close()
 
@@ -96,11 +75,11 @@ test_ids = []
 for test_name in doc_test_list:
     test_id = doc_name_list.index(test_name)
     test_ids.append(test_id)
-# print(test_ids)
+print(test_ids)
 random.shuffle(test_ids)
 
 test_ids_str = '\n'.join(str(index) for index in test_ids)
-f = open(path_name+'/' + dataset + '.test.index', 'w')
+f = open('data/' + dataset + '.test.index', 'w')
 f.write(test_ids_str)
 f.close()
 
@@ -116,11 +95,11 @@ for id in ids:
 shuffle_doc_name_str = '\n'.join(shuffle_doc_name_list)
 shuffle_doc_words_str = '\n'.join(shuffle_doc_words_list)
 
-f = open(path_name+'/' + dataset + '_shuffle.txt', 'w')
+f = open('data/' + dataset + '_shuffle.txt', 'w')
 f.write(shuffle_doc_name_str)
 f.close()
 
-f = open(path_name+'/corpus/' + dataset + '_shuffle.txt', 'w')
+f = open('data/corpus/' + dataset + '_shuffle.txt', 'w')
 f.write(shuffle_doc_words_str)
 f.close()
 
@@ -140,6 +119,7 @@ vocab = list(word_set)
 vocab_size = len(vocab)
 
 word_doc_list = {}
+
 for i in range(len(shuffle_doc_words_list)):
     doc_words = shuffle_doc_words_list[i]
     words = doc_words.split()
@@ -164,9 +144,57 @@ for i in range(vocab_size):
     word_id_map[vocab[i]] = i
 
 vocab_str = '\n'.join(vocab)
-f = open(path_name+'/corpus/' + dataset + '_vocab.txt', 'w')
+
+f = open('data/corpus/' + dataset + '_vocab.txt', 'w')
 f.write(vocab_str)
 f.close()
+
+'''
+Word definitions begin
+'''
+'''
+definitions = []
+for word in vocab:
+    word = word.strip()
+    synsets = wn.synsets(clean_str(word))
+    word_defs = []
+    for synset in synsets:
+        syn_def = synset.definition()
+        word_defs.append(syn_def)
+    word_des = ' '.join(word_defs)
+    if word_des == '':
+        word_des = '<PAD>'
+    definitions.append(word_des)
+string = '\n'.join(definitions)
+f = open('data/corpus/' + dataset + '_vocab_def.txt', 'w')
+f.write(string)
+f.close()
+tfidf_vec = TfidfVectorizer(max_features=1000)
+tfidf_matrix = tfidf_vec.fit_transform(definitions)
+tfidf_matrix_array = tfidf_matrix.toarray()
+print(tfidf_matrix_array[0], len(tfidf_matrix_array[0]))
+word_vectors = []
+for i in range(len(vocab)):
+    word = vocab[i]
+    vector = tfidf_matrix_array[i]
+    str_vector = []
+    for j in range(len(vector)):
+        str_vector.append(str(vector[j]))
+    temp = ' '.join(str_vector)
+    word_vector = word + ' ' + temp
+    word_vectors.append(word_vector)
+string = '\n'.join(word_vectors)
+f = open('data/corpus/' + dataset + '_word_vectors.txt', 'w')
+f.write(string)
+f.close()
+word_vector_file = 'data/corpus/' + dataset + '_word_vectors.txt'
+_, embd, word_vector_map = loadWord2Vec(word_vector_file)
+word_embeddings_dim = len(embd[0])
+'''
+
+'''
+Word definitions end
+'''
 
 # label list
 label_set = set()
@@ -176,7 +204,7 @@ for doc_meta in shuffle_doc_name_list:
 label_list = list(label_set)
 
 label_list_str = '\n'.join(label_list)
-f = open(path_name+'/corpus/' + dataset + '_labels.txt', 'w')
+f = open('data/corpus/' + dataset + '_labels.txt', 'w')
 f.write(label_list_str)
 f.close()
 
@@ -185,12 +213,12 @@ f.close()
 train_size = len(train_ids)
 val_size = int(0.1 * train_size)
 real_train_size = train_size - val_size  # - int(0.5 * train_size)
-
 # different training rates
+
 real_train_doc_names = shuffle_doc_name_list[:real_train_size]
 real_train_doc_names_str = '\n'.join(real_train_doc_names)
 
-f = open(path_name+'/' + dataset + '.real_train.name', 'w')
+f = open('data/' + dataset + '.real_train.name', 'w')
 f.write(real_train_doc_names_str)
 f.close()
 
@@ -229,7 +257,7 @@ for i in range(real_train_size):
     one_hot[label_index] = 1
     y.append(one_hot)
 y = np.array(y)
-# print(y)
+print(y)
 
 # tx: feature vectors of test docs, no initial features
 test_size = len(test_ids)
@@ -267,7 +295,7 @@ for i in range(test_size):
     one_hot[label_index] = 1
     ty.append(one_hot)
 ty = np.array(ty)
-# print(ty)
+print(ty)
 
 # allx: the the feature vectors of both labeled and unlabeled training instances
 # (a superset of x)
@@ -281,6 +309,7 @@ for i in range(len(vocab)):
     if word in word_vector_map:
         vector = word_vector_map[word]
         word_vectors[i] = vector
+        # word_vector[i]=np.zeros((vocab_size, word_embeddings_dim))
 
 row_allx = []
 col_allx = []
@@ -347,7 +376,6 @@ for doc_words in shuffle_doc_words_list:
     if length <= window_size:
         windows.append(words)
     else:
-        # print(length, length - window_size + 1)
         for j in range(length - window_size + 1):
             window = words[j: j + window_size]
             windows.append(window)
@@ -364,10 +392,7 @@ for window in windows:
             word_window_freq[window[i]] = 1
         appeared.add(window[i])
 
-
-#获得词对出现的次数与距离
 word_pair_count = {}
-word_pair_distant = {}
 for window in windows:
     for i in range(1, len(window)):
         for j in range(0, i):
@@ -380,22 +405,14 @@ for window in windows:
             word_pair_str = str(word_i_id) + ',' + str(word_j_id)
             if word_pair_str in word_pair_count:
                 word_pair_count[word_pair_str] += 1
-                if i!=j:
-                    word_pair_distant[word_pair_str]+=i-j
             else:
                 word_pair_count[word_pair_str] = 1
-                if i != j:
-                    word_pair_distant[word_pair_str] =i-j
             # two orders
             word_pair_str = str(word_j_id) + ',' + str(word_i_id)
             if word_pair_str in word_pair_count:
                 word_pair_count[word_pair_str] += 1
-                if i != j:
-                    word_pair_distant[word_pair_str] += j-i
             else:
                 word_pair_count[word_pair_str] = 1
-                if i != j:
-                    word_pair_distant[word_pair_str] = j-i
 
 row = []
 col = []
@@ -413,50 +430,36 @@ for key in word_pair_count:
     pmi = log((1.0 * count / num_window) /
               (1.0 * word_freq_i * word_freq_j/(num_window * num_window)))
     if pmi <= 0:
-        word_pair_distant.pop(key)
         continue
-
     row.append(train_size + i)
     col.append(train_size + j)
     weight.append(pmi)
-print('calculate pmi')
 
-#calculate distance------------------------------------------------
+# word vector cosine similarity as weights
+
+'''
+for i in range(vocab_size):
+    for j in range(vocab_size):
+        if vocab[i] in word_vector_map and vocab[j] in word_vector_map:
+            vector_i = np.array(word_vector_map[vocab[i]])
+            vector_j = np.array(word_vector_map[vocab[j]])
+            similarity = 1.0 - cosine(vector_i, vector_j)
+            if similarity > 0.9:
+                print(vocab[i], vocab[j], similarity)
+                row.append(train_size + i)
+                col.append(train_size + j)
+                weight.append(similarity)
+'''
+# doc word frequency
+doc_word_freq = {}
 row2 = []
 col2 = []
 weight2 = []
-# distant as weights
-for key in word_pair_distant:
-    temp = key.split(',')
-    i = int(temp[0])
-    j = int(temp[1])
-    if word_pair_distant[key]==0:
-        mean_distant=word_pair_count[key]
-    else:
-        mean_distant=word_pair_count[key]/(word_pair_distant[key])
-    row2.append(train_size + i)
-    col2.append(train_size + j)
-    weight2.append(mean_distant)
-print('calculate distanct')
 
-#获得语义
-# word_similiar=get_similiar(word_pair_distant)
-# row3 = []
-# col3 = []
-# weight3 = []
-# # distant as weights
-# for key in word_similiar:
-#     temp = str(key).split(',')
-#     i = int(temp[0])
-#     j = int(temp[1])
-#     row3.append(train_size + i)
-#     col3.append(train_size + j)
-#     weight3.append(word_similiar[key])
-# print('create similiar nodes')
+row3=row
+col3=col
+weight3=weight
 
-
-# doc word frequency
-doc_word_freq = {}
 
 for doc_id in range(len(shuffle_doc_words_list)):
     doc_words = shuffle_doc_words_list[doc_id]
@@ -482,57 +485,53 @@ for i in range(len(shuffle_doc_words_list)):
         if i < train_size:
             row.append(i)
             row2.append(i)
-            # row3.append(i)
         else:
             row.append(i + vocab_size)
             row2.append(i + vocab_size)
-            # row3.append(i + vocab_size)
         col.append(train_size + j)
         col2.append(train_size + j)
-        # col3.append(train_size + j)
         idf = log(1.0 * len(shuffle_doc_words_list) /
                   word_doc_freq[vocab[j]])
         weight.append(freq * idf)
-        weight2.append(1)
-        # weight3.append(1)
+        weight2.append(freq * idf)
         doc_word_set.add(word)
 
 node_size = train_size + vocab_size + test_size
-adj = sp.csr_matrix((weight, (row, col)), shape=(node_size, node_size))
-adj2 = sp.csr_matrix((weight2, (row2, col2)), shape=(node_size, node_size))
-# adj3 = sp.csr_matrix((weight3, (row3, col3)), shape=(node_size, node_size))
+adj=[]
+adj.append(sp.csr_matrix(
+    (weight, (row, col)), shape=(node_size, node_size)))
 
-adjs=[]
-adjs.append(adj)
-adjs.append(adj2)
-# adjs.append(adj3)
-print('create nodes (window_size='+str(window_size)+')')
+adj.append(sp.csr_matrix(
+    (weight2, (row2, col2)), shape=(node_size, node_size)))
+
+adj.append(sp.csr_matrix(
+    (weight3, (row3, col3)), shape=(node_size, node_size)))
 
 # dump objects
-f = open(path_name+"/ind.{}.x".format(dataset), 'wb')
+f = open("data2/ind.{}.x".format(dataset), 'wb')
 pkl.dump(x, f)
 f.close()
 
-f = open(path_name+"/ind.{}.y".format(dataset), 'wb')
+f = open("data2/ind.{}.y".format(dataset), 'wb')
 pkl.dump(y, f)
 f.close()
 
-f = open(path_name+"/ind.{}.tx".format(dataset), 'wb')
+f = open("data2/ind.{}.tx".format(dataset), 'wb')
 pkl.dump(tx, f)
 f.close()
 
-f = open(path_name+"/ind.{}.ty".format(dataset), 'wb')
+f = open("data2/ind.{}.ty".format(dataset), 'wb')
 pkl.dump(ty, f)
 f.close()
 
-f = open(path_name+"/ind.{}.allx".format(dataset), 'wb')
+f = open("data2/ind.{}.allx".format(dataset), 'wb')
 pkl.dump(allx, f)
 f.close()
 
-f = open(path_name+"/ind.{}.ally".format(dataset), 'wb')
+f = open("data2/ind.{}.ally".format(dataset), 'wb')
 pkl.dump(ally, f)
 f.close()
 
-f = open(path_name+"/ind.{}.adj".format(dataset), 'wb')
-pkl.dump(adjs, f)
+f = open("data2/ind.{}.adj".format(dataset), 'wb')
+pkl.dump(adj, f)
 f.close()
