@@ -4,12 +4,10 @@ H. Zhao, J. Xie, H. Wang, "Graph Convolutional Network based on Multi-head Pooli
 ## Overview
 Here we provide the implementation of a MP-GCN in TensorFlow, along with a minimal execution example (on the MR dataset). The repository is organised as follows:
 
-* data/  # contains the necessary dataset files for MR (single-graph data)
-* data_m/  # contains multi-graph data files for MR
+* data/  # contains the necessary dataset files for MR
 * test/  # contains some baselines
 * vector/  # is used to store graph embeddings
-* build_multi_graph.py  # is used to create single graph
-* build_single_graph.py  # is used to create multiple graphs
+* build_multi_graph.py  # is used to create multi-graph to verify MP-GCN-1*
 * inits.py  # contains parameter initialization functions
 * layers.py  # contains the calculation function of single layer graph convolution
 * metrics.py  # contains evaluation functions
@@ -29,3 +27,6 @@ We ran our experiments on five widely used benchmark corpora including 20-Newsgr
 
 ## Dependencies
 The script has been tested running under Python 3.6.5 and tensorflow 1.8.0
+
+## Supplementary notes
+The RS operation in this paper has the best effect when collecting balanced samples
