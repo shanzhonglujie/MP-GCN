@@ -10,6 +10,7 @@ _LAYER_UIDS = {}
 
 # topk function
 def ntop_k(support_w,k,head_num):
+    # RS operation in this paper has the best effect when collecting balanced samples
     # take the front head_num dimensions, exactly corresponding to the balanced sample
     w=tf.transpose(support_w)
     lst=[]
