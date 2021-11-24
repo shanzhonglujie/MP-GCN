@@ -27,6 +27,3 @@ We ran our experiments on five widely used benchmark corpora including 20-Newsgr
 
 ## Dependencies
 The script has been tested running under Python 3.6.5 and tensorflow 1.8.0
-
-## Supplementary notes
-The RS operation in this paper has the best effect when collecting balanced samples
