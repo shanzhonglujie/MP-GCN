@@ -53,6 +53,11 @@ class GCN(nn.Module):
     def forward(self, x, adj):
         x_ = self.gc1(x, adj)
         w = th.sigmoid(self.w(x, adj))
+        #-----topk-----------
+        new_w = th.zeros(w.size())
+        _, indices = w.topk(int(w.size()[0]*0.8), dim=0, largest=True, sorted=True)
+        new_w[indices]=w[indices].cpu()         
+        #--------------------
         x=(x_*w+x_)/2
         x = th.relu(x)
         x = th.dropout(x, self.dropout, train=self.training)
